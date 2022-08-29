@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { NumberButton } from '../NumberButton/NumberButton';
+import { StarsDisplay } from '../StarsDIsplay/StarsDisplay';
 import './StarMatch.css';
 
 const StarMatch = () => {
@@ -11,14 +13,11 @@ const StarMatch = () => {
         </div>
         <div className="body">
           <div className="left">
-            { utils.range(1, stars).map(starId =>
-              <div key={starId} className="star" /> 
-            )}
-            <div className="star" />
+            <StarsDisplay count={stars}/>
           </div>
           <div className="right">
             { utils.range(1, 9).map(number =>
-              <button key={number} className="number">{number}</button>
+              <NumberButton key={number} number={number} />
             )}
           </div>
         </div>
@@ -66,5 +65,6 @@ const StarMatch = () => {
   };
 
   export {
-    StarMatch
+    StarMatch,
+    utils
   };
