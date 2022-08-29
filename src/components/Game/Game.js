@@ -4,25 +4,55 @@ import { StarsDisplay } from '../StarsDIsplay/StarsDisplay';
 import { PlayAgain } from '../PlayAgain/PlayAgain';
 import './Game.css';
 
+//Custom Hook to manage all of the state
+const useGameState = () => {
+  const [stars, setStars] = useState(utils.random(1, 9));
+  //Make sure to have the minimum neccesary containers to represent the states
+  const [ availableNums, setAvailableNums ] = useState(utils.range(1, 9));
+  const [ candidateNums, setCandidateNums ] = useState([]);
+  const [ secondsLeft, setSecondsLeft] = useState(10);
+
+  //Run this function every time the owner component renders itself
+  useEffect(() => {
+    //Since the setTimeout function affects the state, React will rerender after every time we call it, so it will continue to call the same function every second in a loop
+    if (secondsLeft > 0 && availableNums.length > 0) {
+      const timerId = setTimeout(() => {
+        setSecondsLeft(secondsLeft - 1);
+      } ,1000);
+
+      //Cleaning up after the effect
+      return () => clearTimeout(timerId);
+    }
+  });
+
+  const setGameState = (newCandidateNums) => {
+    if (utils.sum(newCandidateNums) !== stars) {
+      setCandidateNums(newCandidateNums);
+    } else {
+      const newAvailableNums = availableNums.filter(num => !newCandidateNums.includes(num));
+      setStars(utils.randomSumIn(newAvailableNums, 9));
+      setAvailableNums(newAvailableNums);
+      setCandidateNums([]);
+    }
+  }
+
+  return {
+    stars,
+    availableNums,
+    candidateNums,
+    secondsLeft,
+    setGameState
+  };
+}
+
 const Game = ({ startNewGame }) => {
-    const [stars, setStars] = useState(utils.random(1, 9));
-    //Make sure to have the minimum neccesary containers to represent the states
-    const [ availableNums, setAvailableNums ] = useState(utils.range(1, 9));
-    const [ candidateNums, setCandidateNums ] = useState([]);
-    const [ secondsLeft, setSecondsLeft] = useState(10);
-
-    //Run this function every time the owner component renders itself
-    useEffect(() => {
-      //Since the setTimeout function affects the state, React will rerender after every time we call it, so it will continue to call the same function every second in a loop
-      if (secondsLeft > 0 && availableNums.length > 0) {
-        const timerId = setTimeout(() => {
-          setSecondsLeft(secondsLeft - 1);
-        } ,1000);
-
-        //Cleaning up after the effect
-        return () => clearTimeout(timerId);
-      }
-    });
+    const {
+      stars,
+      availableNums,
+      candidateNums,
+      secondsLeft,
+      setGameState
+    } = useGameState();
 
     const candidatesAreWrong = utils.sum(candidateNums) > stars;
     const gameStatus = availableNums.length === 0
@@ -51,14 +81,8 @@ const Game = ({ startNewGame }) => {
         currentStatus === 'available' 
         ? candidateNums.concat(number)
         : candidateNums.filter(cn => cn !== number);
-      if (utils.sum(newCandidateNums) !== stars) {
-        setCandidateNums(newCandidateNums);
-      } else {
-        const newAvailableNums = availableNums.filter(num => !newCandidateNums.includes(num));
-        setStars(utils.randomSumIn(newAvailableNums, 9));
-        setAvailableNums(newAvailableNums);
-        setCandidateNums([]);
-      }
+
+      setGameState(newCandidateNums);
     }
 
     return (
