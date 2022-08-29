@@ -1,4 +1,4 @@
-import { utils } from '../StarMatch/StarMatch';
+import { utils } from '../Game/Game';
 
 const StarsDisplay = ({ count }) => {
     return (
